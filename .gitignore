@@ -1,5 +1,21 @@
-(index.html is a source file, so according to rule 6, since there are no build artifacts, dependencies, or temp files in the changes, the .gitignore should remain empty)
+# Compiled and build artifacts
+*.pyc
+__pycache__/
 
-```gitignore
+# Dependencies
+.venv/
+venv/
 
-```
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
