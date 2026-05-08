@@ -1,10 +1,29 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OBS Overlay Manager</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OPL Overlay</title>
     <style>
+        :root {
+            --color-slate-800: #1e293b;
+            --color-slate-700: #334155;
+            --color-slate-600: #475569;
+            --color-slate-500: #64748b;
+            --color-slate-400: #94a3b8;
+            --color-slate-200: #e2e8f0;
+            --color-slate-100: #f1f5f9;
+            --color-blue-500: #3b82f6;
+            --color-blue-600: #2563eb;
+            --color-red-500: #ef4444;
+            --color-green-500: #22c55e;
+            --color-white: #ffffff;
+            --color-black: #000000;
+            --color-gray-700: #374151;
+            --color-gray-800: #1f2937;
+            --color-gray-900: #111827;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,567 +31,1215 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--color-slate-800);
+            color: var(--color-white);
             min-height: 100vh;
-            padding: 20px;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        h1 {
-            color: white;
-            text-align: center;
-            margin-bottom: 30px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .controls {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            margin-bottom: 30px;
-        }
-
-        .control-section {
-            margin-bottom: 25px;
-            padding-bottom: 25px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .control-section:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-
-        h2 {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 1.3em;
-        }
-
-        .input-group {
+        .app-container {
             display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        input[type="text"],
-        input[type="url"],
-        input[type="file"],
-        select {
-            flex: 1;
-            min-width: 200px;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-            transition: border-color 0.3s;
+        /* Sidebar */
+        .sidebar {
+            width: 320px;
+            background-color: var(--color-slate-700);
+            border-right: 1px solid var(--color-slate-600);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
         }
 
-        input:focus,
-        select:focus {
-            outline: none;
-            border-color: #667eea;
+        .sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--color-slate-600);
         }
 
-        button {
-            padding: 12px 25px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
+        .sidebar-title {
+            font-size: 1.25rem;
             font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s;
+            color: var(--color-white);
         }
 
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--color-slate-600);
         }
 
-        button:active {
-            transform: translateY(0);
+        .tab {
+            flex: 1;
+            padding: 0.75rem;
+            text-align: center;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            color: var(--color-slate-400);
+            font-size: 0.875rem;
+            transition: all 0.2s;
         }
 
-        button.danger {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        .tab:hover {
+            color: var(--color-white);
+            background-color: var(--color-slate-600);
         }
 
-        button.success {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        .tab.active {
+            color: var(--color-white);
+            background-color: var(--color-slate-600);
+            border-bottom: 2px solid var(--color-blue-500);
+        }
+
+        .sidebar-content {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .panel {
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--color-slate-400);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            background-color: var(--color-slate-800);
+            border: 1px solid var(--color-slate-600);
+            border-radius: 0.375rem;
+            color: var(--color-white);
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--color-blue-500);
+        }
+
+        .form-textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 0.375rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--color-blue-500);
+            color: var(--color-white);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--color-blue-600);
+        }
+
+        .btn-secondary {
+            background-color: var(--color-slate-600);
+            color: var(--color-white);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--color-slate-500);
+        }
+
+        .btn-danger {
+            background-color: var(--color-red-500);
+            color: var(--color-white);
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        /* Color Picker */
+        .color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .color-picker {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        input[type="color"] {
-            width: 50px;
+            width: 40px;
             height: 40px;
+            padding: 0;
             border: none;
-            border-radius: 5px;
+            border-radius: 0.375rem;
             cursor: pointer;
         }
 
-        .size-control {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        input[type="range"] {
+        /* Preview Area */
+        .preview-area {
             flex: 1;
-            height: 8px;
-            border-radius: 5px;
-            background: #ddd;
-            outline: none;
-        }
-
-        .overlay-preview {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        #overlay-container {
+            display: flex;
+            flex-direction: column;
+            background-color: var(--color-slate-900);
             position: relative;
-            width: 100%;
-            height: 500px;
-            background: #000000;
-            border-radius: 5px;
-            overflow: hidden;
+        }
+
+        .preview-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--color-slate-700);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preview-title {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .preview-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .preview-canvas {
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 1rem;
+            overflow: hidden;
         }
 
-        .overlay-item {
+        .canvas-container {
+            position: relative;
+            width: 1920px;
+            height: 1080px;
+            background-color: transparent;
+            transform-origin: center center;
+            transform: scale(0.5);
+        }
+
+        .overlay-element {
             position: absolute;
-            max-width: 90%;
-            max-height: 90%;
+            cursor: move;
+            user-select: none;
+        }
+
+        .overlay-element.selected {
+            outline: 2px solid var(--color-blue-500);
         }
 
         .overlay-text {
-            font-size: 48px;
-            font-weight: bold;
-            text-align: center;
-            padding: 20px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            white-space: pre-wrap;
+            word-break: break-word;
         }
 
-        .overlay-image {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-
+        .overlay-image,
         .overlay-video {
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
         }
 
-        .instructions {
-            background: rgba(255,255,255,0.1);
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 30px;
-            color: white;
+        .overlay-video {
+            pointer-events: none;
         }
 
-        .instructions h3 {
-            margin-bottom: 15px;
+        /* Item List */
+        .item-list {
+            list-style: none;
         }
 
-        .instructions ol {
-            margin-left: 20px;
+        .item-list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            background-color: var(--color-slate-800);
+            border-radius: 0.375rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
 
-        .instructions li {
-            margin-bottom: 10px;
-            line-height: 1.6;
+        .item-list-item:hover {
+            background-color: var(--color-slate-700);
         }
 
-        .url-input {
-            margin-top: 10px;
+        .item-list-item.selected {
+            border-left: 3px solid var(--color-blue-500);
         }
 
-        .hidden {
+        .item-list-item-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .item-list-item-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .item-list-item-type {
+            font-size: 0.75rem;
+            color: var(--color-slate-400);
+        }
+
+        .item-list-item-actions {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed var(--color-slate-500);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .upload-area:hover {
+            border-color: var(--color-blue-500);
+            background-color: var(--color-slate-800);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--color-blue-500);
+            background-color: var(--color-slate-800);
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            color: var(--color-slate-400);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-text {
+            font-size: 0.875rem;
+            color: var(--color-slate-400);
+        }
+
+        /* Range Slider */
+        .range-slider {
+            width: 100%;
+            height: 6px;
+            background-color: var(--color-slate-600);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background-color: var(--color-blue-500);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .range-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background-color: var(--color-blue-500);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        /* Checkbox */
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        /* Hidden file input */
+        .hidden-input {
             display: none;
         }
 
-        .item-controls {
-            position: absolute;
-            top: 10px;
-            right: 10px;
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background-color: var(--color-slate-800);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--color-slate-600);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: var(--color-slate-500);
+        }
+
+        /* Pattern background for canvas */
+        .pattern-bg {
+            background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h16v2h-6v6h6v8H8v-6H2v6H0V0zm4 4h2v2H4V4zm8 8h2v2h-2v-2zm-8 0h2v2H4v-2zm8-8h2v2h-2V4z' fill='%23ffffff' fill-opacity='0.04' fill-rule='evenodd'/%3E%3C/svg%3E");
+            background-size: 16px 16px;
+        }
+
+        /* Action buttons in sidebar footer */
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--color-slate-600);
             display: flex;
-            gap: 5px;
-            z-index: 100;
+            flex-direction: column;
+            gap: 0.5rem;
         }
 
-        .item-controls button {
-            padding: 5px 10px;
-            font-size: 12px;
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--color-slate-400);
         }
 
-        .position-controls {
-            margin-top: 15px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
         }
 
-        .position-controls button {
-            padding: 8px 15px;
-            font-size: 12px;
+        /* Font family selector preview */
+        .font-preview {
+            font-family: inherit;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎬 OBS Overlay Manager</h1>
-
-        <div class="controls">
-            <!-- Text Section -->
-            <div class="control-section">
-                <h2>📝 Текст</h2>
-                <div class="input-group">
-                    <input type="text" id="text-input" placeholder="Введите текст для отображения">
-                    <button onclick="addText()">Добавить текст</button>
-                </div>
-                <div class="color-picker">
-                    <label>Цвет текста:</label>
-                    <input type="color" id="text-color" value="#ffffff">
-                    <label>Размер шрифта:</label>
-                    <input type="range" id="text-size" min="12" max="200" value="48">
-                    <span id="text-size-value">48px</span>
-                </div>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="sidebar-title">OPL Overlay</h1>
             </div>
 
-            <!-- Image Section -->
-            <div class="control-section">
-                <h2>🖼️ Изображение</h2>
-                <div class="input-group">
-                    <input type="file" id="image-input" accept="image/*">
-                    <button onclick="addImageFromFile()">Загрузить изображение</button>
+            <div class="tabs">
+                <button class="tab active" data-tab="elements">Elements</button>
+                <button class="tab" data-tab="media">Media</button>
+                <button class="tab" data-tab="settings">Settings</button>
+            </div>
+
+            <div class="sidebar-content">
+                <!-- Elements Panel -->
+                <div class="panel active" id="panel-elements">
+                    <div class="form-group">
+                        <label class="form-label">Add Element</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-secondary btn-sm" onclick="addTextElement()">+ Text</button>
+                            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('imageUpload').click()">+ Image</button>
+                            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('videoUpload').click()">+ Video</button>
+                        </div>
+                        <input type="file" id="imageUpload" class="hidden-input" accept="image/*" onchange="handleImageUpload(event)">
+                        <input type="file" id="videoUpload" class="hidden-input" accept="video/*" onchange="handleVideoUpload(event)">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Elements List</label>
+                        <ul class="item-list" id="elementsList">
+                            <!-- Items will be added here dynamically -->
+                        </ul>
+                    </div>
+
+                    <div id="elementProperties" style="display: none;">
+                        <hr style="border: none; border-top: 1px solid var(--color-slate-600); margin: 1rem 0;">
+                        
+                        <div class="form-group">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-input" id="elementName" onchange="updateElementProperty('name', this.value)">
+                        </div>
+
+                        <!-- Text Properties -->
+                        <div id="textProperties" style="display: none;">
+                            <div class="form-group">
+                                <label class="form-label">Text Content</label>
+                                <textarea class="form-textarea" id="textContent" oninput="updateElementProperty('text', this.value)"></textarea>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Font Size</label>
+                                    <input type="number" class="form-input" id="textSize" value="48" onchange="updateElementProperty('fontSize', this.value)">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Font Family</label>
+                                    <select class="form-select" id="textFont" onchange="updateElementProperty('fontFamily', this.value)">
+                                        <option value="Arial">Arial</option>
+                                        <option value="Roboto">Roboto</option>
+                                        <option value="Open Sans">Open Sans</option>
+                                        <option value="Montserrat">Montserrat</option>
+                                        <option value="Impact">Impact</option>
+                                        <option value="Times New Roman">Times New Roman</option>
+                                        <option value="Georgia">Georgia</option>
+                                        <option value="Verdana">Verdana</option>
+                                        <option value="Courier New">Courier New</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Color</label>
+                                    <div class="color-picker-wrapper">
+                                        <input type="color" class="color-picker" id="textColor" value="#ffffff" onchange="updateElementProperty('color', this.value)">
+                                        <input type="text" class="form-input" id="textColorHex" value="#ffffff" onchange="updateElementProperty('color', this.value)">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Bold</label>
+                                <div class="checkbox-wrapper">
+                                    <input type="checkbox" class="checkbox" id="textBold" onchange="updateElementProperty('bold', this.checked)">
+                                    <span>Enable Bold</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Italic</label>
+                                <div class="checkbox-wrapper">
+                                    <input type="checkbox" class="checkbox" id="textItalic" onchange="updateElementProperty('italic', this.checked)">
+                                    <span>Enable Italic</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Text Shadow</label>
+                                <div class="checkbox-wrapper">
+                                    <input type="checkbox" class="checkbox" id="textShadow" onchange="updateElementProperty('shadow', this.checked)">
+                                    <span>Enable Shadow</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Common Properties -->
+                        <div class="form-group">
+                            <label class="form-label">Position X</label>
+                            <input type="range" class="range-slider" id="positionX" min="0" max="1920" value="0" oninput="updateElementProperty('x', this.value)">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Position Y</label>
+                            <input type="range" class="range-slider" id="positionY" min="0" max="1080" value="0" oninput="updateElementProperty('y', this.value)">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Scale</label>
+                            <input type="range" class="range-slider" id="elementScale" min="0.1" max="3" step="0.1" value="1" oninput="updateElementProperty('scale', this.value)">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Opacity</label>
+                            <input type="range" class="range-slider" id="elementOpacity" min="0" max="1" step="0.1" value="1" oninput="updateElementProperty('opacity', this.value)">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Rotation</label>
+                            <input type="range" class="range-slider" id="elementRotation" min="0" max="360" value="0" oninput="updateElementProperty('rotation', this.value)">
+                        </div>
+
+                        <button class="btn btn-danger btn-full" onclick="deleteSelectedElement()">Delete Element</button>
+                    </div>
                 </div>
-                <div class="url-input">
-                    <div class="input-group">
-                        <input type="url" id="image-url" placeholder="Или вставьте URL изображения">
-                        <button onclick="addImageFromUrl()">Добавить по URL</button>
+
+                <!-- Media Panel -->
+                <div class="panel" id="panel-media">
+                    <div class="form-group">
+                        <label class="form-label">Upload Media</label>
+                        <div class="upload-area" id="uploadArea" onclick="document.getElementById('mediaUpload').click()">
+                            <div class="upload-icon">📁</div>
+                            <div class="upload-text">Click to upload or drag and drop</div>
+                            <div class="upload-text" style="font-size: 0.75rem; margin-top: 0.5rem;">Supports: Images (PNG, JPG, GIF, WebP) and Videos (MP4, WebM)</div>
+                        </div>
+                        <input type="file" id="mediaUpload" class="hidden-input" accept="image/*,video/*" multiple onchange="handleMediaUpload(event)">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Or add by URL</label>
+                        <div class="form-row">
+                            <input type="text" class="form-input" id="mediaUrl" placeholder="https://example.com/image.png">
+                            <button class="btn btn-primary" onclick="addMediaByUrl()">Add</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Media Library</label>
+                        <ul class="item-list" id="mediaLibrary">
+                            <!-- Media items will be added here -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Settings Panel -->
+                <div class="panel" id="panel-settings">
+                    <div class="form-group">
+                        <label class="form-label">Canvas Size</label>
+                        <div class="form-row">
+                            <input type="number" class="form-input" id="canvasWidth" value="1920" disabled>
+                            <input type="number" class="form-input" id="canvasHeight" value="1080" disabled>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Background</label>
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" class="checkbox" id="transparentBg" checked onchange="toggleTransparentBg(this.checked)">
+                            <span>Transparent Background</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Export</label>
+                        <button class="btn btn-primary btn-full" onclick="exportConfig()">Export Configuration (JSON)</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Import</label>
+                        <button class="btn btn-secondary btn-full" onclick="document.getElementById('importFile').click()">Import Configuration</button>
+                        <input type="file" id="importFile" class="hidden-input" accept=".json" onchange="importConfig(event)">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">OBS Setup</label>
+                        <div style="background-color: var(--color-slate-800); padding: 1rem; border-radius: 0.375rem; font-size: 0.875rem; line-height: 1.6;">
+                            <p>1. Add a new "Browser" source in OBS</p>
+                            <p>2. Check "Local file" and select this HTML file</p>
+                            <p>3. Set Width: <strong>1920</strong>, Height: <strong>1080</strong></p>
+                            <p>4. Check "Shutdown source when not visible"</p>
+                            <p>5. Click OK</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Video Section -->
-            <div class="control-section">
-                <h2>🎥 Видео</h2>
-                <div class="input-group">
-                    <input type="file" id="video-input" accept="video/*">
-                    <button onclick="addVideoFromFile()">Загрузить видео</button>
+            <div class="sidebar-footer">
+                <button class="btn btn-primary btn-full" onclick="saveProject()">💾 Save Project</button>
+                <button class="btn btn-secondary btn-full" onclick="clearAll()">🗑️ Clear All</button>
+            </div>
+        </aside>
+
+        <!-- Preview Area -->
+        <main class="preview-area">
+            <div class="preview-header">
+                <h2 class="preview-title">Preview (1920x1080)</h2>
+                <div class="preview-controls">
+                    <button class="btn btn-secondary btn-sm" onclick="resetZoom()">Reset Zoom</button>
+                    <button class="btn btn-secondary btn-sm" onclick="toggleGrid()">Toggle Grid</button>
                 </div>
-                <div class="url-input">
-                    <div class="input-group">
-                        <input type="url" id="video-url" placeholder="Или вставьте URL видео (mp4, webm)">
-                        <button onclick="addVideoFromUrl()">Добавить по URL</button>
-                    </div>
+            </div>
+
+            <div class="preview-canvas pattern-bg" id="previewCanvas">
+                <div class="canvas-container" id="canvasContainer">
+                    <!-- Overlay elements will be rendered here -->
                 </div>
             </div>
-
-            <!-- Clear All -->
-            <div class="control-section">
-                <button class="danger" onclick="clearAll()">🗑️ Очистить всё</button>
-            </div>
-        </div>
-
-        <div class="overlay-preview">
-            <h2 style="color: white; margin-bottom: 15px;">Предпросмотр оверлея</h2>
-            <div id="overlay-container">
-                <!-- Overlay items will be added here -->
-            </div>
-        </div>
-
-        <div class="instructions">
-            <h3>📋 Как использовать в OBS:</h3>
-            <ol>
-                <li>Запустите этот файл в браузере</li>
-                <li>Добавьте текст, изображения или видео с помощью панелей управления</li>
-                <li>Настройте положение и размер элементов</li>
-                <li>В OBS добавьте новый источник "Browser" (Браузер)</li>
-                <li>Укажите URL этого файла или используйте локальный файл</li>
-                <li>Установите ширину и высоту (рекомендуется 1920x1080)</li>
-                <li>Элементы будут отображаться поверх вашего видео в OBS</li>
-            </ol>
-            <p style="margin-top: 15px; opacity: 0.8;">💡 Совет: Для прозрачного фона в OBS установите цвет фона #000000 и используйте хромакей, или оставьте как есть для черного фона.</p>
-        </div>
+        </main>
     </div>
 
     <script>
-        let itemId = 0;
-        const overlayContainer = document.getElementById('overlay-container');
+        // State
+        let elements = [];
+        let mediaLibrary = [];
+        let selectedElementId = null;
+        let isTransparentBg = true;
+        let showGrid = false;
 
-        // Update text size display
-        document.getElementById('text-size').addEventListener('input', function(e) {
-            document.getElementById('text-size-value').textContent = e.target.value + 'px';
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(`panel-${tab.dataset.tab}`).classList.add('active');
+            });
         });
 
-        function createOverlayItem(type) {
-            const item = document.createElement('div');
-            item.className = 'overlay-item';
-            item.id = `item-${itemId++}`;
-            item.style.left = '50%';
-            item.style.top = '50%';
-            item.style.transform = 'translate(-50%, -50%)';
-            
-            const controls = document.createElement('div');
-            controls.className = 'item-controls';
-            controls.innerHTML = `
-                <button onclick="moveUp('${item.id}')" title="Переместить вверх">⬆️</button>
-                <button onclick="moveDown('${item.id}')" title="Переместить вниз">⬇️</button>
-                <button onclick="moveLeft('${item.id}')" title="Переместить влево">⬅️</button>
-                <button onclick="moveRight('${item.id}')" title="Переместить вправо">➡️</button>
-                <button class="danger" onclick="removeItem('${item.id}')" title="Удалить">❌</button>
-            `;
-            item.appendChild(controls);
-            
-            return { item, controls };
+        // Element management
+        function generateId() {
+            return 'el_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         }
 
-        function addText() {
-            const textInput = document.getElementById('text-input');
-            const textColor = document.getElementById('text-color').value;
-            const textSize = document.getElementById('text-size').value;
+        function addTextElement() {
+            const element = {
+                id: generateId(),
+                type: 'text',
+                name: 'Text ' + (elements.filter(e => e.type === 'text').length + 1),
+                text: 'Sample Text',
+                x: 960,
+                y: 540,
+                fontSize: 48,
+                fontFamily: 'Arial',
+                color: '#ffffff',
+                bold: false,
+                italic: false,
+                shadow: true,
+                scale: 1,
+                opacity: 1,
+                rotation: 0
+            };
             
-            if (!textInput.value.trim()) {
-                alert('Пожалуйста, введите текст');
-                return;
-            }
-
-            const { item, controls } = createOverlayItem('text');
-            
-            const textElement = document.createElement('div');
-            textElement.className = 'overlay-text';
-            textElement.textContent = textInput.value;
-            textElement.style.color = textColor;
-            textElement.style.fontSize = textSize + 'px';
-            
-            item.appendChild(textElement);
-            overlayContainer.appendChild(item);
-            
-            textInput.value = '';
+            elements.push(element);
+            selectElement(element.id);
+            renderElements();
+            updateElementsList();
         }
 
-        function addImageFromFile() {
-            const fileInput = document.getElementById('image-input');
-            const file = fileInput.files[0];
-            
-            if (!file) {
-                alert('Пожалуйста, выберите файл изображения');
-                return;
-            }
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = function(e) {
-                const { item, controls } = createOverlayItem('image');
+            reader.onload = (e) => {
+                const media = {
+                    id: generateId(),
+                    type: 'image',
+                    name: file.name,
+                    src: e.target.result,
+                    url: e.target.result
+                };
                 
-                const img = document.createElement('img');
-                img.className = 'overlay-image';
-                img.src = e.target.result;
-                
-                item.appendChild(img);
-                overlayContainer.appendChild(item);
-                
-                fileInput.value = '';
+                mediaLibrary.push(media);
+                addElementFromMedia(media);
+                updateMediaLibrary();
             };
             reader.readAsDataURL(file);
+            event.target.value = '';
         }
 
-        function addImageFromUrl() {
-            const urlInput = document.getElementById('image-url');
-            const url = urlInput.value.trim();
-            
-            if (!url) {
-                alert('Пожалуйста, введите URL изображения');
-                return;
-            }
-
-            const { item, controls } = createOverlayItem('image');
-            
-            const img = document.createElement('img');
-            img.className = 'overlay-image';
-            img.src = url;
-            img.onerror = function() {
-                alert('Не удалось загрузить изображение по указанному URL');
-                removeItem(item.id);
-            };
-            
-            item.appendChild(img);
-            overlayContainer.appendChild(item);
-            
-            urlInput.value = '';
-        }
-
-        function addVideoFromFile() {
-            const fileInput = document.getElementById('video-input');
-            const file = fileInput.files[0];
-            
-            if (!file) {
-                alert('Пожалуйста, выберите видеофайл');
-                return;
-            }
+        function handleVideoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = function(e) {
-                const { item, controls } = createOverlayItem('video');
+            reader.onload = (e) => {
+                const media = {
+                    id: generateId(),
+                    type: 'video',
+                    name: file.name,
+                    src: e.target.result,
+                    url: e.target.result
+                };
                 
-                const video = document.createElement('video');
-                video.className = 'overlay-video';
-                video.src = e.target.result;
-                video.autoplay = true;
-                video.loop = true;
-                video.muted = true;
-                video.playsInline = true;
-                
-                item.appendChild(video);
-                overlayContainer.appendChild(item);
-                
-                fileInput.value = '';
+                mediaLibrary.push(media);
+                addElementFromMedia(media);
+                updateMediaLibrary();
             };
             reader.readAsDataURL(file);
+            event.target.value = '';
         }
 
-        function addVideoFromUrl() {
-            const urlInput = document.getElementById('video-url');
-            const url = urlInput.value.trim();
+        function handleMediaUpload(event) {
+            const files = event.target.files;
+            for (let file of files) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const isVideo = file.type.startsWith('video/');
+                    const media = {
+                        id: generateId(),
+                        type: isVideo ? 'video' : 'image',
+                        name: file.name,
+                        src: e.target.result,
+                        url: e.target.result
+                    };
+                    
+                    mediaLibrary.push(media);
+                    updateMediaLibrary();
+                };
+                reader.readAsDataURL(file);
+            }
+            event.target.value = '';
+        }
+
+        function addMediaByUrl() {
+            const url = document.getElementById('mediaUrl').value.trim();
+            if (!url) return;
+
+            const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
+            const media = {
+                id: generateId(),
+                type: isVideo ? 'video' : 'image',
+                name: url.split('/').pop() || 'Media',
+                src: url,
+                url: url
+            };
+
+            mediaLibrary.push(media);
+            addElementFromMedia(media);
+            updateMediaLibrary();
+            document.getElementById('mediaUrl').value = '';
+        }
+
+        function addElementFromMedia(media) {
+            const element = {
+                id: generateId(),
+                type: media.type,
+                name: media.name,
+                mediaId: media.id,
+                src: media.url,
+                x: 960,
+                y: 540,
+                scale: 1,
+                opacity: 1,
+                rotation: 0
+            };
+
+            if (media.type === 'video') {
+                element.autoplay = true;
+                element.loop = true;
+                element.muted = true;
+            }
+
+            elements.push(element);
+            selectElement(element.id);
+            renderElements();
+            updateElementsList();
+        }
+
+        function selectElement(id) {
+            selectedElementId = id;
+            renderElements();
+            updateElementsList();
+            updatePropertiesPanel();
+        }
+
+        function deleteSelectedElement() {
+            if (!selectedElementId) return;
             
-            if (!url) {
-                alert('Пожалуйста, введите URL видео');
+            elements = elements.filter(e => e.id !== selectedElementId);
+            selectedElementId = null;
+            renderElements();
+            updateElementsList();
+            updatePropertiesPanel();
+        }
+
+        function updateElementProperty(property, value) {
+            if (!selectedElementId) return;
+
+            const element = elements.find(e => e.id === selectedElementId);
+            if (!element) return;
+
+            // Convert numeric values
+            if (['x', 'y', 'fontSize', 'rotation'].includes(property)) {
+                value = Number(value);
+            }
+            if (['scale', 'opacity'].includes(property)) {
+                value = parseFloat(value);
+            }
+
+            element[property] = value;
+            renderElements();
+        }
+
+        function getSelectedElement() {
+            return elements.find(e => e.id === selectedElementId);
+        }
+
+        function updatePropertiesPanel() {
+            const panel = document.getElementById('elementProperties');
+            const element = getSelectedElement();
+
+            if (!element) {
+                panel.style.display = 'none';
                 return;
             }
 
-            const { item, controls } = createOverlayItem('video');
-            
-            const video = document.createElement('video');
-            video.className = 'overlay-video';
-            video.src = url;
-            video.autoplay = true;
-            video.loop = true;
-            video.muted = true;
-            video.playsInline = true;
-            video.onerror = function() {
-                alert('Не удалось загрузить видео по указанному URL');
-                removeItem(item.id);
-            };
-            
-            item.appendChild(video);
-            overlayContainer.appendChild(item);
-            
-            urlInput.value = '';
+            panel.style.display = 'block';
+            document.getElementById('elementName').value = element.name || '';
+
+            // Update common properties
+            document.getElementById('positionX').value = element.x || 0;
+            document.getElementById('positionY').value = element.y || 0;
+            document.getElementById('elementScale').value = element.scale || 1;
+            document.getElementById('elementOpacity').value = element.opacity || 1;
+            document.getElementById('elementRotation').value = element.rotation || 0;
+
+            // Update text-specific properties
+            const textProps = document.getElementById('textProperties');
+            if (element.type === 'text') {
+                textProps.style.display = 'block';
+                document.getElementById('textContent').value = element.text || '';
+                document.getElementById('textSize').value = element.fontSize || 48;
+                document.getElementById('textFont').value = element.fontFamily || 'Arial';
+                document.getElementById('textColor').value = element.color || '#ffffff';
+                document.getElementById('textColorHex').value = element.color || '#ffffff';
+                document.getElementById('textBold').checked = element.bold || false;
+                document.getElementById('textItalic').checked = element.italic || false;
+                document.getElementById('textShadow').checked = element.shadow !== undefined ? element.shadow : true;
+            } else {
+                textProps.style.display = 'none';
+            }
         }
 
-        function removeItem(itemId) {
-            const item = document.getElementById(itemId);
-            if (item) {
-                item.remove();
+        function renderElements() {
+            const container = document.getElementById('canvasContainer');
+            container.innerHTML = '';
+
+            elements.forEach(element => {
+                const elDiv = document.createElement('div');
+                elDiv.className = `overlay-element${element.id === selectedElementId ? ' selected' : ''}`;
+                elDiv.style.left = `${element.x}px`;
+                elDiv.style.top = `${element.y}px`;
+                elDiv.style.transform = `translate(-50%, -50%) scale(${element.scale}) rotate(${element.rotation}deg)`;
+                elDiv.style.opacity = element.opacity;
+                elDiv.onclick = (e) => {
+                    e.stopPropagation();
+                    selectElement(element.id);
+                };
+
+                if (element.type === 'text') {
+                    elDiv.className += ' overlay-text';
+                    elDiv.textContent = element.text;
+                    elDiv.style.fontSize = `${element.fontSize}px`;
+                    elDiv.style.fontFamily = element.fontFamily;
+                    elDiv.style.color = element.color;
+                    elDiv.style.fontWeight = element.bold ? 'bold' : 'normal';
+                    elDiv.style.fontStyle = element.italic ? 'italic' : 'normal';
+                    if (element.shadow) {
+                        elDiv.style.textShadow = '0px 0px 3px #FFFFFFEE, 2px 2px 4px rgba(0,0,0,0.8)';
+                    }
+                } else if (element.type === 'image') {
+                    const img = document.createElement('img');
+                    img.className = 'overlay-image';
+                    img.src = element.src;
+                    img.alt = element.name;
+                    elDiv.appendChild(img);
+                } else if (element.type === 'video') {
+                    const video = document.createElement('video');
+                    video.className = 'overlay-video';
+                    video.src = element.src;
+                    video.autoplay = element.autoplay !== false;
+                    video.loop = element.loop !== false;
+                    video.muted = element.muted !== false;
+                    video.playsInline = true;
+                    elDiv.appendChild(video);
+                }
+
+                container.appendChild(elDiv);
+            });
+        }
+
+        function updateElementsList() {
+            const list = document.getElementById('elementsList');
+            list.innerHTML = '';
+
+            if (elements.length === 0) {
+                list.innerHTML = '<li class="empty-state"><div class="empty-state-icon">📋</div><div>No elements yet</div></li>';
+                return;
             }
+
+            elements.forEach((element, index) => {
+                const li = document.createElement('li');
+                li.className = `item-list-item${element.id === selectedElementId ? ' selected' : ''}`;
+                li.onclick = () => selectElement(element.id);
+
+                const typeIcons = { text: '📝', image: '🖼️', video: '🎬' };
+                
+                li.innerHTML = `
+                    <div class="item-list-item-info">
+                        <div class="item-list-item-name">${element.name || 'Unnamed'}</div>
+                        <div class="item-list-item-type">${typeIcons[element.type] || ''} ${element.type}</div>
+                    </div>
+                    <div class="item-list-item-actions">
+                        <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); moveElementUp(${index})">↑</button>
+                        <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); moveElementDown(${index})">↓</button>
+                    </div>
+                `;
+
+                list.appendChild(li);
+            });
+        }
+
+        function updateMediaLibrary() {
+            const list = document.getElementById('mediaLibrary');
+            list.innerHTML = '';
+
+            if (mediaLibrary.length === 0) {
+                list.innerHTML = '<li class="empty-state"><div class="empty-state-icon">📁</div><div>No media files</div></li>';
+                return;
+            }
+
+            mediaLibrary.forEach(media => {
+                const li = document.createElement('li');
+                li.className = 'item-list-item';
+
+                const typeIcons = { image: '🖼️', video: '🎬' };
+                
+                li.innerHTML = `
+                    <div class="item-list-item-info">
+                        <div class="item-list-item-name">${media.name}</div>
+                        <div class="item-list-item-type">${typeIcons[media.type] || ''} ${media.type}</div>
+                    </div>
+                    <div class="item-list-item-actions">
+                        <button class="btn btn-sm btn-primary" onclick="addElementFromMediaById('${media.id}')">+</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteMedia('${media.id}')">✕</button>
+                    </div>
+                `;
+
+                list.appendChild(li);
+            });
+        }
+
+        function addElementFromMediaById(mediaId) {
+            const media = mediaLibrary.find(m => m.id === mediaId);
+            if (media) {
+                addElementFromMedia(media);
+            }
+        }
+
+        function deleteMedia(mediaId) {
+            mediaLibrary = mediaLibrary.filter(m => m.id !== mediaId);
+            elements = elements.filter(e => e.mediaId !== mediaId);
+            updateMediaLibrary();
+            renderElements();
+            updateElementsList();
+        }
+
+        function moveElementUp(index) {
+            if (index === 0) return;
+            [elements[index - 1], elements[index]] = [elements[index], elements[index - 1]];
+            renderElements();
+            updateElementsList();
+        }
+
+        function moveElementDown(index) {
+            if (index === elements.length - 1) return;
+            [elements[index], elements[index + 1]] = [elements[index + 1], elements[index]];
+            renderElements();
+            updateElementsList();
+        }
+
+        // Drag and drop for upload area
+        const uploadArea = document.getElementById('uploadArea');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            for (let file of files) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const isVideo = file.type.startsWith('video/');
+                    const media = {
+                        id: generateId(),
+                        type: isVideo ? 'video' : 'image',
+                        name: file.name,
+                        src: event.target.result,
+                        url: event.target.result
+                    };
+                    
+                    mediaLibrary.push(media);
+                    updateMediaLibrary();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Canvas zoom adjustment
+        function adjustCanvasScale() {
+            const container = document.getElementById('canvasContainer');
+            const previewCanvas = document.getElementById('previewCanvas');
+            
+            const availableWidth = previewCanvas.clientWidth - 40;
+            const availableHeight = previewCanvas.clientHeight - 40;
+            
+            const scaleX = availableWidth / 1920;
+            const scaleY = availableHeight / 1080;
+            const scale = Math.min(scaleX, scaleY, 0.8);
+            
+            container.style.transform = `scale(${scale})`;
+        }
+
+        function resetZoom() {
+            const container = document.getElementById('canvasContainer');
+            container.style.transform = 'scale(0.5)';
+        }
+
+        function toggleGrid() {
+            showGrid = !showGrid;
+            const previewCanvas = document.getElementById('previewCanvas');
+            if (showGrid) {
+                previewCanvas.style.backgroundImage = `
+                    linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
+                `;
+                previewCanvas.style.backgroundSize = '100px 100px';
+            } else {
+                previewCanvas.style.backgroundImage = '';
+                previewCanvas.classList.add('pattern-bg');
+            }
+        }
+
+        function toggleTransparentBg(checked) {
+            isTransparentBg = checked;
+            const container = document.getElementById('canvasContainer');
+            if (checked) {
+                container.style.backgroundColor = 'transparent';
+            } else {
+                container.style.backgroundColor = '#000000';
+            }
+        }
+
+        // Export/Import
+        function exportConfig() {
+            const config = {
+                elements: elements,
+                mediaLibrary: mediaLibrary,
+                settings: {
+                    transparentBg: isTransparentBg
+                }
+            };
+
+            const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'overlay-config.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importConfig(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const config = JSON.parse(e.target.result);
+                    elements = config.elements || [];
+                    mediaLibrary = config.mediaLibrary || [];
+                    
+                    if (config.settings) {
+                        isTransparentBg = config.settings.transparentBg !== false;
+                        document.getElementById('transparentBg').checked = isTransparentBg;
+                        toggleTransparentBg(isTransparentBg);
+                    }
+
+                    renderElements();
+                    updateElementsList();
+                    updateMediaLibrary();
+                    alert('Configuration imported successfully!');
+                } catch (err) {
+                    alert('Error importing configuration: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function saveProject() {
+            exportConfig();
         }
 
         function clearAll() {
-            if (confirm('Вы уверены, что хотите удалить все элементы?')) {
-                overlayContainer.innerHTML = '';
+            if (confirm('Are you sure you want to clear all elements?')) {
+                elements = [];
+                selectedElementId = null;
+                renderElements();
+                updateElementsList();
+                updatePropertiesPanel();
             }
         }
 
-        function moveUp(itemId) {
-            const item = document.getElementById(itemId);
-            const currentTop = parseFloat(item.style.top) || 50;
-            if (currentTop > 10) {
-                item.style.top = (currentTop - 5) + '%';
-            }
-        }
-
-        function moveDown(itemId) {
-            const item = document.getElementById(itemId);
-            const currentTop = parseFloat(item.style.top) || 50;
-            if (currentTop < 90) {
-                item.style.top = (currentTop + 5) + '%';
-            }
-        }
-
-        function moveLeft(itemId) {
-            const item = document.getElementById(itemId);
-            const currentLeft = parseFloat(item.style.left) || 50;
-            if (currentLeft > 10) {
-                item.style.left = (currentLeft - 5) + '%';
-            }
-        }
-
-        function moveRight(itemId) {
-            const item = document.getElementById(itemId);
-            const currentLeft = parseFloat(item.style.left) || 50;
-            if (currentLeft < 90) {
-                item.style.left = (currentLeft + 5) + '%';
-            }
-        }
-
-        // Allow dragging items
-        let draggedItem = null;
-        let offsetX, offsetY;
-
-        overlayContainer.addEventListener('mousedown', function(e) {
-            if (e.target.classList.contains('overlay-item') || 
-                e.target.classList.contains('overlay-text') || 
-                e.target.classList.contains('overlay-image') || 
-                e.target.classList.contains('overlay-video')) {
-                
-                draggedItem = e.target.classList.contains('overlay-item') ? e.target : e.target.parentElement;
-                
-                const rect = draggedItem.getBoundingClientRect();
-                const containerRect = overlayContainer.getBoundingClientRect();
-                
-                offsetX = e.clientX - rect.left;
-                offsetY = e.clientY - rect.top;
-                
-                draggedItem.style.cursor = 'grabbing';
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Delete' || e.key === 'Backspace') {
+                if (selectedElementId && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+                    deleteSelectedElement();
+                }
             }
         });
 
-        document.addEventListener('mousemove', function(e) {
-            if (draggedItem) {
-                const containerRect = overlayContainer.getBoundingClientRect();
-                
-                let newLeft = ((e.clientX - containerRect.left - offsetX) / containerRect.width) * 100;
-                let newTop = ((e.clientY - containerRect.top - offsetY) / containerRect.height) * 100;
-                
-                newLeft = Math.max(0, Math.min(100, newLeft));
-                newTop = Math.max(0, Math.min(100, newTop));
-                
-                draggedItem.style.left = newLeft + '%';
-                draggedItem.style.top = newTop + '%';
-                draggedItem.style.transform = 'none';
+        // Click outside to deselect
+        document.getElementById('canvasContainer').addEventListener('click', (e) => {
+            if (e.target.id === 'canvasContainer') {
+                selectedElementId = null;
+                renderElements();
+                updateElementsList();
+                updatePropertiesPanel();
             }
         });
 
-        document.addEventListener('mouseup', function() {
-            if (draggedItem) {
-                draggedItem.style.cursor = 'default';
-                draggedItem = null;
-            }
-        });
+        // Initialize
+        window.addEventListener('resize', adjustCanvasScale);
+        setTimeout(adjustCanvasScale, 100);
+
+        // Add a sample text element on first load
+        addTextElement();
     </script>
 </body>
 </html>
