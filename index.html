@@ -1,471 +1,495 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OPL Overlay</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus AI - Agent Command Center</title>
     <style>
         :root {
-            --color-slate-800: #1e293b;
-            --color-slate-700: #334155;
-            --color-slate-600: #475569;
-            --color-slate-500: #64748b;
-            --color-slate-400: #94a3b8;
-            --color-slate-200: #e2e8f0;
-            --color-slate-100: #f1f5f9;
-            --color-blue-500: #3b82f6;
-            --color-blue-600: #2563eb;
-            --color-red-500: #ef4444;
-            --color-green-500: #22c55e;
-            --color-white: #ffffff;
-            --color-black: #000000;
-            --color-gray-700: #374151;
-            --color-gray-800: #1f2937;
-            --color-gray-900: #111827;
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --accent-primary: #6366f1;
+            --accent-secondary: #8b5cf6;
+            --accent-glow: rgba(99, 102, 241, 0.5);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border-radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         body {
-            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background-color: var(--color-slate-800);
-            color: var(--color-white);
+            background: var(--bg-primary);
+            color: var(--text-primary);
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         .app-container {
-            display: flex;
+            display: grid;
+            grid-template-columns: 280px 1fr 350px;
             height: 100vh;
-            overflow: hidden;
+            gap: 1px;
+            background: var(--bg-tertiary);
         }
 
         /* Sidebar */
         .sidebar {
-            width: 320px;
-            background-color: var(--color-slate-700);
-            border-right: 1px solid var(--color-slate-600);
+            background: var(--bg-secondary);
+            padding: 24px;
             display: flex;
             flex-direction: column;
-            overflow-y: auto;
+            gap: 24px;
+            border-right: 1px solid var(--bg-tertiary);
         }
 
-        .sidebar-header {
-            padding: 1rem;
-            border-bottom: 1px solid var(--color-slate-600);
-        }
-
-        .sidebar-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--color-white);
-        }
-
-        .tabs {
+        .logo {
             display: flex;
-            border-bottom: 1px solid var(--color-slate-600);
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .tab {
-            flex: 1;
-            padding: 0.75rem;
-            text-align: center;
-            cursor: pointer;
-            background: transparent;
-            border: none;
-            color: var(--color-slate-400);
-            font-size: 0.875rem;
-            transition: all 0.2s;
-        }
-
-        .tab:hover {
-            color: var(--color-white);
-            background-color: var(--color-slate-600);
-        }
-
-        .tab.active {
-            color: var(--color-white);
-            background-color: var(--color-slate-600);
-            border-bottom: 2px solid var(--color-blue-500);
-        }
-
-        .sidebar-content {
-            flex: 1;
-            padding: 1rem;
-            overflow-y: auto;
-        }
-
-        .panel {
-            display: none;
-        }
-
-        .panel.active {
-            display: block;
-        }
-
-        /* Form Elements */
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 0.75rem;
-            color: var(--color-slate-400);
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .form-input,
-        .form-select,
-        .form-textarea {
-            width: 100%;
-            padding: 0.5rem 0.75rem;
-            background-color: var(--color-slate-800);
-            border: 1px solid var(--color-slate-600);
-            border-radius: 0.375rem;
-            color: var(--color-white);
-            font-size: 0.875rem;
-            transition: border-color 0.2s;
-        }
-
-        .form-input:focus,
-        .form-select:focus,
-        .form-textarea:focus {
-            outline: none;
-            border-color: var(--color-blue-500);
-        }
-
-        .form-textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
-
-        .form-row {
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 8px;
             display: flex;
-            gap: 0.5rem;
-        }
-
-        .form-row .form-group {
-            flex: 1;
-        }
-
-        /* Buttons */
-        .btn {
-            display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            border-radius: 0.375rem;
+            font-size: 18px;
+            color: white;
+            -webkit-text-fill-color: white;
+        }
+
+        .nav-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-secondary);
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: rgba(99, 102, 241, 0.1);
+            border-left: 3px solid var(--accent-primary);
+        }
+
+        .agent-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .agent-card {
+            background: var(--bg-tertiary);
+            padding: 16px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.2);
+        }
+
+        .agent-card.active {
+            border-color: var(--accent-primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .agent-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .agent-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .agent-info h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .agent-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+
+        .status-dot.busy {
+            background: var(--warning);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Main Content */
+        .main-content {
+            background: var(--bg-primary);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
             border: none;
             cursor: pointer;
-            transition: all 0.2s;
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .btn-primary {
-            background-color: var(--color-blue-500);
-            color: var(--color-white);
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
         }
 
         .btn-primary:hover {
-            background-color: var(--color-blue-600);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px var(--accent-glow);
         }
 
         .btn-secondary {
-            background-color: var(--color-slate-600);
-            color: var(--color-white);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
         }
 
         .btn-secondary:hover {
-            background-color: var(--color-slate-500);
+            background: var(--bg-tertiary);
+            filter: brightness(1.1);
         }
 
-        .btn-danger {
-            background-color: var(--color-red-500);
-            color: var(--color-white);
-        }
-
-        .btn-danger:hover {
-            background-color: #dc2626;
-        }
-
-        .btn-full {
-            width: 100%;
-        }
-
-        .btn-sm {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
-        }
-
-        /* Color Picker */
-        .color-picker-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .color-picker {
-            width: 40px;
-            height: 40px;
-            padding: 0;
-            border: none;
-            border-radius: 0.375rem;
-            cursor: pointer;
-        }
-
-        /* Preview Area */
-        .preview-area {
+        /* Chat Area */
+        .chat-container {
             flex: 1;
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
             display: flex;
             flex-direction: column;
-            background-color: var(--color-slate-900);
-            position: relative;
+            overflow: hidden;
         }
 
-        .preview-header {
-            padding: 1rem;
-            border-bottom: 1px solid var(--color-slate-700);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .preview-title {
-            font-size: 1rem;
-            font-weight: 600;
-        }
-
-        .preview-controls {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .preview-canvas {
+        .chat-messages {
             flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            max-width: 80%;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 1rem;
-            overflow: hidden;
+            font-size: 14px;
+            flex-shrink: 0;
         }
 
-        .canvas-container {
-            position: relative;
-            width: 1920px;
-            height: 1080px;
-            background-color: transparent;
-            transform-origin: center center;
-            transform: scale(0.5);
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
         }
 
-        .overlay-element {
-            position: absolute;
-            cursor: move;
-            user-select: none;
+        .message-content {
+            background: var(--bg-tertiary);
+            padding: 16px;
+            border-radius: 12px;
+            line-height: 1.5;
         }
 
-        .overlay-element.selected {
-            outline: 2px solid var(--color-blue-500);
+        .message.user .message-content {
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.3);
         }
 
-        .overlay-text {
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-
-        .overlay-image,
-        .overlay-video {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-
-        .overlay-video {
-            pointer-events: none;
-        }
-
-        /* Item List */
-        .item-list {
-            list-style: none;
-        }
-
-        .item-list-item {
+        .chat-input {
+            padding: 20px;
+            background: var(--bg-tertiary);
             display: flex;
+            gap: 12px;
             align-items: center;
-            justify-content: space-between;
-            padding: 0.75rem;
-            background-color: var(--color-slate-800);
-            border-radius: 0.375rem;
-            margin-bottom: 0.5rem;
-            cursor: pointer;
-            transition: background-color 0.2s;
         }
 
-        .item-list-item:hover {
-            background-color: var(--color-slate-700);
-        }
-
-        .item-list-item.selected {
-            border-left: 3px solid var(--color-blue-500);
-        }
-
-        .item-list-item-info {
+        .chat-input input {
             flex: 1;
-            overflow: hidden;
-        }
-
-        .item-list-item-name {
-            font-size: 0.875rem;
-            font-weight: 500;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .item-list-item-type {
-            font-size: 0.75rem;
-            color: var(--color-slate-400);
-        }
-
-        .item-list-item-actions {
-            display: flex;
-            gap: 0.25rem;
-        }
-
-        /* Upload Area */
-        .upload-area {
-            border: 2px dashed var(--color-slate-500);
-            border-radius: 0.5rem;
-            padding: 2rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .upload-area:hover {
-            border-color: var(--color-blue-500);
-            background-color: var(--color-slate-800);
-        }
-
-        .upload-area.dragover {
-            border-color: var(--color-blue-500);
-            background-color: var(--color-slate-800);
-        }
-
-        .upload-icon {
-            font-size: 2rem;
-            color: var(--color-slate-400);
-            margin-bottom: 0.5rem;
-        }
-
-        .upload-text {
-            font-size: 0.875rem;
-            color: var(--color-slate-400);
-        }
-
-        /* Range Slider */
-        .range-slider {
-            width: 100%;
-            height: 6px;
-            background-color: var(--color-slate-600);
-            border-radius: 3px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--bg-tertiary);
+            border-radius: var(--border-radius);
+            padding: 14px 18px;
+            color: var(--text-primary);
             outline: none;
-            -webkit-appearance: none;
+            transition: var(--transition);
         }
 
-        .range-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            background-color: var(--color-blue-500);
-            border-radius: 50%;
-            cursor: pointer;
+        .chat-input input:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
 
-        .range-slider::-moz-range-thumb {
-            width: 16px;
-            height: 16px;
-            background-color: var(--color-blue-500);
-            border-radius: 50%;
-            cursor: pointer;
-            border: none;
+        /* Right Panel */
+        .right-panel {
+            background: var(--bg-secondary);
+            padding: 24px;
+            border-left: 1px solid var(--bg-tertiary);
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            overflow-y: auto;
         }
 
-        /* Checkbox */
-        .checkbox-wrapper {
+        .panel-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .panel-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .stat-card {
+            background: var(--bg-tertiary);
+            padding: 16px;
+            border-radius: var(--border-radius);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .task-item {
+            background: var(--bg-tertiary);
+            padding: 14px;
+            border-radius: var(--border-radius);
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 12px;
         }
 
-        .checkbox {
-            width: 18px;
-            height: 18px;
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+            border: 2px solid var(--accent-primary);
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
         }
 
-        /* Hidden file input */
-        .hidden-input {
-            display: none;
+        .task-checkbox.checked {
+            background: var(--accent-primary);
+        }
+
+        .task-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-size: 12px;
+        }
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .task-progress {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--bg-secondary);
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 2px;
+            transition: width 0.3s ease;
         }
 
         /* Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
-            height: 8px;
         }
 
         ::-webkit-scrollbar-track {
-            background-color: var(--color-slate-800);
+            background: var(--bg-secondary);
         }
 
         ::-webkit-scrollbar-thumb {
-            background-color: var(--color-slate-600);
+            background: var(--bg-tertiary);
             border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background-color: var(--color-slate-500);
+            background: var(--accent-primary);
         }
 
-        /* Pattern background for canvas */
-        .pattern-bg {
-            background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h16v2h-6v6h6v8H8v-6H2v6H0V0zm4 4h2v2H4V4zm8 8h2v2h-2v-2zm-8 0h2v2H4v-2zm8-8h2v2h-2V4z' fill='%23ffffff' fill-opacity='0.04' fill-rule='evenodd'/%3E%3C/svg%3E");
-            background-size: 16px 16px;
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Action buttons in sidebar footer */
-        .sidebar-footer {
-            padding: 1rem;
-            border-top: 1px solid var(--color-slate-600);
+        .message {
+            animation: fadeIn 0.3s ease;
+        }
+
+        .typing-indicator {
             display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
+            gap: 4px;
+            padding: 16px;
         }
 
-        /* Empty state */
-        .empty-state {
-            text-align: center;
-            padding: 2rem;
-            color: var(--color-slate-400);
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
         }
 
-        .empty-state-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
 
-        /* Font family selector preview */
-        .font-preview {
-            font-family: inherit;
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
         }
     </style>
 </head>
@@ -473,773 +497,382 @@
     <div class="app-container">
         <!-- Sidebar -->
         <aside class="sidebar">
-            <div class="sidebar-header">
-                <h1 class="sidebar-title">OPL Overlay</h1>
+            <div class="logo">
+                <div class="logo-icon">⚡</div>
+                <span>Nexus AI</span>
             </div>
 
-            <div class="tabs">
-                <button class="tab active" data-tab="elements">Elements</button>
-                <button class="tab" data-tab="media">Media</button>
-                <button class="tab" data-tab="settings">Settings</button>
-            </div>
-
-            <div class="sidebar-content">
-                <!-- Elements Panel -->
-                <div class="panel active" id="panel-elements">
-                    <div class="form-group">
-                        <label class="form-label">Add Element</label>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <button class="btn btn-secondary btn-sm" onclick="addTextElement()">+ Text</button>
-                            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('imageUpload').click()">+ Image</button>
-                            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('videoUpload').click()">+ Video</button>
-                        </div>
-                        <input type="file" id="imageUpload" class="hidden-input" accept="image/*" onchange="handleImageUpload(event)">
-                        <input type="file" id="videoUpload" class="hidden-input" accept="video/*" onchange="handleVideoUpload(event)">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Elements List</label>
-                        <ul class="item-list" id="elementsList">
-                            <!-- Items will be added here dynamically -->
-                        </ul>
-                    </div>
-
-                    <div id="elementProperties" style="display: none;">
-                        <hr style="border: none; border-top: 1px solid var(--color-slate-600); margin: 1rem 0;">
-                        
-                        <div class="form-group">
-                            <label class="form-label">Name</label>
-                            <input type="text" class="form-input" id="elementName" onchange="updateElementProperty('name', this.value)">
-                        </div>
-
-                        <!-- Text Properties -->
-                        <div id="textProperties" style="display: none;">
-                            <div class="form-group">
-                                <label class="form-label">Text Content</label>
-                                <textarea class="form-textarea" id="textContent" oninput="updateElementProperty('text', this.value)"></textarea>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label class="form-label">Font Size</label>
-                                    <input type="number" class="form-input" id="textSize" value="48" onchange="updateElementProperty('fontSize', this.value)">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Font Family</label>
-                                    <select class="form-select" id="textFont" onchange="updateElementProperty('fontFamily', this.value)">
-                                        <option value="Arial">Arial</option>
-                                        <option value="Roboto">Roboto</option>
-                                        <option value="Open Sans">Open Sans</option>
-                                        <option value="Montserrat">Montserrat</option>
-                                        <option value="Impact">Impact</option>
-                                        <option value="Times New Roman">Times New Roman</option>
-                                        <option value="Georgia">Georgia</option>
-                                        <option value="Verdana">Verdana</option>
-                                        <option value="Courier New">Courier New</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label class="form-label">Color</label>
-                                    <div class="color-picker-wrapper">
-                                        <input type="color" class="color-picker" id="textColor" value="#ffffff" onchange="updateElementProperty('color', this.value)">
-                                        <input type="text" class="form-input" id="textColorHex" value="#ffffff" onchange="updateElementProperty('color', this.value)">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Bold</label>
-                                <div class="checkbox-wrapper">
-                                    <input type="checkbox" class="checkbox" id="textBold" onchange="updateElementProperty('bold', this.checked)">
-                                    <span>Enable Bold</span>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Italic</label>
-                                <div class="checkbox-wrapper">
-                                    <input type="checkbox" class="checkbox" id="textItalic" onchange="updateElementProperty('italic', this.checked)">
-                                    <span>Enable Italic</span>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Text Shadow</label>
-                                <div class="checkbox-wrapper">
-                                    <input type="checkbox" class="checkbox" id="textShadow" onchange="updateElementProperty('shadow', this.checked)">
-                                    <span>Enable Shadow</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Common Properties -->
-                        <div class="form-group">
-                            <label class="form-label">Position X</label>
-                            <input type="range" class="range-slider" id="positionX" min="0" max="1920" value="0" oninput="updateElementProperty('x', this.value)">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Position Y</label>
-                            <input type="range" class="range-slider" id="positionY" min="0" max="1080" value="0" oninput="updateElementProperty('y', this.value)">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Scale</label>
-                            <input type="range" class="range-slider" id="elementScale" min="0.1" max="3" step="0.1" value="1" oninput="updateElementProperty('scale', this.value)">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Opacity</label>
-                            <input type="range" class="range-slider" id="elementOpacity" min="0" max="1" step="0.1" value="1" oninput="updateElementProperty('opacity', this.value)">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Rotation</label>
-                            <input type="range" class="range-slider" id="elementRotation" min="0" max="360" value="0" oninput="updateElementProperty('rotation', this.value)">
-                        </div>
-
-                        <button class="btn btn-danger btn-full" onclick="deleteSelectedElement()">Delete Element</button>
-                    </div>
+            <nav class="nav-section">
+                <div class="nav-item active">
+                    <span>🏠</span>
+                    <span>Dashboard</span>
                 </div>
-
-                <!-- Media Panel -->
-                <div class="panel" id="panel-media">
-                    <div class="form-group">
-                        <label class="form-label">Upload Media</label>
-                        <div class="upload-area" id="uploadArea" onclick="document.getElementById('mediaUpload').click()">
-                            <div class="upload-icon">📁</div>
-                            <div class="upload-text">Click to upload or drag and drop</div>
-                            <div class="upload-text" style="font-size: 0.75rem; margin-top: 0.5rem;">Supports: Images (PNG, JPG, GIF, WebP) and Videos (MP4, WebM)</div>
-                        </div>
-                        <input type="file" id="mediaUpload" class="hidden-input" accept="image/*,video/*" multiple onchange="handleMediaUpload(event)">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Or add by URL</label>
-                        <div class="form-row">
-                            <input type="text" class="form-input" id="mediaUrl" placeholder="https://example.com/image.png">
-                            <button class="btn btn-primary" onclick="addMediaByUrl()">Add</button>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Media Library</label>
-                        <ul class="item-list" id="mediaLibrary">
-                            <!-- Media items will be added here -->
-                        </ul>
-                    </div>
+                <div class="nav-item">
+                    <span>🤖</span>
+                    <span>Agents</span>
                 </div>
-
-                <!-- Settings Panel -->
-                <div class="panel" id="panel-settings">
-                    <div class="form-group">
-                        <label class="form-label">Canvas Size</label>
-                        <div class="form-row">
-                            <input type="number" class="form-input" id="canvasWidth" value="1920" disabled>
-                            <input type="number" class="form-input" id="canvasHeight" value="1080" disabled>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Background</label>
-                        <div class="checkbox-wrapper">
-                            <input type="checkbox" class="checkbox" id="transparentBg" checked onchange="toggleTransparentBg(this.checked)">
-                            <span>Transparent Background</span>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Export</label>
-                        <button class="btn btn-primary btn-full" onclick="exportConfig()">Export Configuration (JSON)</button>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Import</label>
-                        <button class="btn btn-secondary btn-full" onclick="document.getElementById('importFile').click()">Import Configuration</button>
-                        <input type="file" id="importFile" class="hidden-input" accept=".json" onchange="importConfig(event)">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">OBS Setup</label>
-                        <div style="background-color: var(--color-slate-800); padding: 1rem; border-radius: 0.375rem; font-size: 0.875rem; line-height: 1.6;">
-                            <p>1. Add a new "Browser" source in OBS</p>
-                            <p>2. Check "Local file" and select this HTML file</p>
-                            <p>3. Set Width: <strong>1920</strong>, Height: <strong>1080</strong></p>
-                            <p>4. Check "Shutdown source when not visible"</p>
-                            <p>5. Click OK</p>
-                        </div>
-                    </div>
+                <div class="nav-item">
+                    <span>📊</span>
+                    <span>Analytics</span>
                 </div>
+                <div class="nav-item">
+                    <span>⚙️</span>
+                    <span>Settings</span>
+                </div>
+            </nav>
+
+            <div class="panel-title">Active Agents</div>
+            <div class="agent-list" id="agentList">
+                <!-- Agents will be populated by JS -->
             </div>
 
-            <div class="sidebar-footer">
-                <button class="btn btn-primary btn-full" onclick="saveProject()">💾 Save Project</button>
-                <button class="btn btn-secondary btn-full" onclick="clearAll()">🗑️ Clear All</button>
-            </div>
+            <button class="btn btn-primary" onclick="createNewAgent()">
+                <span>+</span>
+                <span>New Agent</span>
+            </button>
         </aside>
 
-        <!-- Preview Area -->
-        <main class="preview-area">
-            <div class="preview-header">
-                <h2 class="preview-title">Preview (1920x1080)</h2>
-                <div class="preview-controls">
-                    <button class="btn btn-secondary btn-sm" onclick="resetZoom()">Reset Zoom</button>
-                    <button class="btn btn-secondary btn-sm" onclick="toggleGrid()">Toggle Grid</button>
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="header">
+                <h1 id="chatTitle">Select an Agent</h1>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary">📥 Export</button>
+                    <button class="btn btn-secondary">🔗 Connect API</button>
                 </div>
             </div>
 
-            <div class="preview-canvas pattern-bg" id="previewCanvas">
-                <div class="canvas-container" id="canvasContainer">
-                    <!-- Overlay elements will be rendered here -->
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message">
+                        <div class="message-avatar">🤖</div>
+                        <div class="message-content">
+                            Hello! I'm your AI assistant. Select an agent from the sidebar or create a new one to get started. I can help you automate tasks, analyze data, and manage your workflows.
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="messageInput" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
+                    <button class="btn btn-primary" onclick="sendMessage()">
+                        <span>🚀</span>
+                        <span>Send</span>
+                    </button>
                 </div>
             </div>
         </main>
+
+        <!-- Right Panel -->
+        <aside class="right-panel">
+            <div class="panel-section">
+                <div class="panel-title">Performance</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="tasksCompleted">0</div>
+                        <div class="stat-label">Tasks Done</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="activeTime">0m</div>
+                        <div class="stat-label">Active Time</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="accuracy">98%</div>
+                        <div class="stat-label">Accuracy</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="responseTime">1.2s</div>
+                        <div class="stat-label">Avg Response</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">Current Tasks</div>
+                <div class="task-list" id="taskList">
+                    <!-- Tasks will be populated by JS -->
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">Capabilities</div>
+                <div class="task-list">
+                    <div class="task-item">
+                        <div class="task-checkbox checked"></div>
+                        <div class="task-info">
+                            <div class="task-name">Natural Language</div>
+                            <div class="task-progress">Understanding & Generation</div>
+                        </div>
+                    </div>
+                    <div class="task-item">
+                        <div class="task-checkbox checked"></div>
+                        <div class="task-info">
+                            <div class="task-name">Data Analysis</div>
+                            <div class="task-progress">Pattern Recognition</div>
+                        </div>
+                    </div>
+                    <div class="task-item">
+                        <div class="task-checkbox checked"></div>
+                        <div class="task-info">
+                            <div class="task-name">Automation</div>
+                            <div class="task-progress">Workflow Execution</div>
+                        </div>
+                    </div>
+                    <div class="task-item">
+                        <div class="task-checkbox"></div>
+                        <div class="task-info">
+                            <div class="task-name">Image Processing</div>
+                            <div class="task-progress">Coming Soon</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
     </div>
 
     <script>
         // State
-        let elements = [];
-        let mediaLibrary = [];
-        let selectedElementId = null;
-        let isTransparentBg = true;
-        let showGrid = false;
+        let agents = [
+            { id: 1, name: 'Atlas', role: 'Data Analyst', status: 'idle', avatar: '📊', tasks: [] },
+            { id: 2, name: 'Luna', role: 'Content Creator', status: 'busy', avatar: '✍️', tasks: [] },
+            { id: 3, name: 'Orion', role: 'Code Assistant', status: 'idle', avatar: '💻', tasks: [] }
+        ];
 
-        // Tab switching
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-                
-                tab.classList.add('active');
-                document.getElementById(`panel-${tab.dataset.tab}`).classList.add('active');
-            });
-        });
-
-        // Element management
-        function generateId() {
-            return 'el_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        }
-
-        function addTextElement() {
-            const element = {
-                id: generateId(),
-                type: 'text',
-                name: 'Text ' + (elements.filter(e => e.type === 'text').length + 1),
-                text: 'Sample Text',
-                x: 960,
-                y: 540,
-                fontSize: 48,
-                fontFamily: 'Arial',
-                color: '#ffffff',
-                bold: false,
-                italic: false,
-                shadow: true,
-                scale: 1,
-                opacity: 1,
-                rotation: 0
-            };
-            
-            elements.push(element);
-            selectElement(element.id);
-            renderElements();
-            updateElementsList();
-        }
-
-        function handleImageUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const media = {
-                    id: generateId(),
-                    type: 'image',
-                    name: file.name,
-                    src: e.target.result,
-                    url: e.target.result
-                };
-                
-                mediaLibrary.push(media);
-                addElementFromMedia(media);
-                updateMediaLibrary();
-            };
-            reader.readAsDataURL(file);
-            event.target.value = '';
-        }
-
-        function handleVideoUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const media = {
-                    id: generateId(),
-                    type: 'video',
-                    name: file.name,
-                    src: e.target.result,
-                    url: e.target.result
-                };
-                
-                mediaLibrary.push(media);
-                addElementFromMedia(media);
-                updateMediaLibrary();
-            };
-            reader.readAsDataURL(file);
-            event.target.value = '';
-        }
-
-        function handleMediaUpload(event) {
-            const files = event.target.files;
-            for (let file of files) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const isVideo = file.type.startsWith('video/');
-                    const media = {
-                        id: generateId(),
-                        type: isVideo ? 'video' : 'image',
-                        name: file.name,
-                        src: e.target.result,
-                        url: e.target.result
-                    };
-                    
-                    mediaLibrary.push(media);
-                    updateMediaLibrary();
-                };
-                reader.readAsDataURL(file);
-            }
-            event.target.value = '';
-        }
-
-        function addMediaByUrl() {
-            const url = document.getElementById('mediaUrl').value.trim();
-            if (!url) return;
-
-            const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
-            const media = {
-                id: generateId(),
-                type: isVideo ? 'video' : 'image',
-                name: url.split('/').pop() || 'Media',
-                src: url,
-                url: url
-            };
-
-            mediaLibrary.push(media);
-            addElementFromMedia(media);
-            updateMediaLibrary();
-            document.getElementById('mediaUrl').value = '';
-        }
-
-        function addElementFromMedia(media) {
-            const element = {
-                id: generateId(),
-                type: media.type,
-                name: media.name,
-                mediaId: media.id,
-                src: media.url,
-                x: 960,
-                y: 540,
-                scale: 1,
-                opacity: 1,
-                rotation: 0
-            };
-
-            if (media.type === 'video') {
-                element.autoplay = true;
-                element.loop = true;
-                element.muted = true;
-            }
-
-            elements.push(element);
-            selectElement(element.id);
-            renderElements();
-            updateElementsList();
-        }
-
-        function selectElement(id) {
-            selectedElementId = id;
-            renderElements();
-            updateElementsList();
-            updatePropertiesPanel();
-        }
-
-        function deleteSelectedElement() {
-            if (!selectedElementId) return;
-            
-            elements = elements.filter(e => e.id !== selectedElementId);
-            selectedElementId = null;
-            renderElements();
-            updateElementsList();
-            updatePropertiesPanel();
-        }
-
-        function updateElementProperty(property, value) {
-            if (!selectedElementId) return;
-
-            const element = elements.find(e => e.id === selectedElementId);
-            if (!element) return;
-
-            // Convert numeric values
-            if (['x', 'y', 'fontSize', 'rotation'].includes(property)) {
-                value = Number(value);
-            }
-            if (['scale', 'opacity'].includes(property)) {
-                value = parseFloat(value);
-            }
-
-            element[property] = value;
-            renderElements();
-        }
-
-        function getSelectedElement() {
-            return elements.find(e => e.id === selectedElementId);
-        }
-
-        function updatePropertiesPanel() {
-            const panel = document.getElementById('elementProperties');
-            const element = getSelectedElement();
-
-            if (!element) {
-                panel.style.display = 'none';
-                return;
-            }
-
-            panel.style.display = 'block';
-            document.getElementById('elementName').value = element.name || '';
-
-            // Update common properties
-            document.getElementById('positionX').value = element.x || 0;
-            document.getElementById('positionY').value = element.y || 0;
-            document.getElementById('elementScale').value = element.scale || 1;
-            document.getElementById('elementOpacity').value = element.opacity || 1;
-            document.getElementById('elementRotation').value = element.rotation || 0;
-
-            // Update text-specific properties
-            const textProps = document.getElementById('textProperties');
-            if (element.type === 'text') {
-                textProps.style.display = 'block';
-                document.getElementById('textContent').value = element.text || '';
-                document.getElementById('textSize').value = element.fontSize || 48;
-                document.getElementById('textFont').value = element.fontFamily || 'Arial';
-                document.getElementById('textColor').value = element.color || '#ffffff';
-                document.getElementById('textColorHex').value = element.color || '#ffffff';
-                document.getElementById('textBold').checked = element.bold || false;
-                document.getElementById('textItalic').checked = element.italic || false;
-                document.getElementById('textShadow').checked = element.shadow !== undefined ? element.shadow : true;
-            } else {
-                textProps.style.display = 'none';
-            }
-        }
-
-        function renderElements() {
-            const container = document.getElementById('canvasContainer');
-            container.innerHTML = '';
-
-            elements.forEach(element => {
-                const elDiv = document.createElement('div');
-                elDiv.className = `overlay-element${element.id === selectedElementId ? ' selected' : ''}`;
-                elDiv.style.left = `${element.x}px`;
-                elDiv.style.top = `${element.y}px`;
-                elDiv.style.transform = `translate(-50%, -50%) scale(${element.scale}) rotate(${element.rotation}deg)`;
-                elDiv.style.opacity = element.opacity;
-                elDiv.onclick = (e) => {
-                    e.stopPropagation();
-                    selectElement(element.id);
-                };
-
-                if (element.type === 'text') {
-                    elDiv.className += ' overlay-text';
-                    elDiv.textContent = element.text;
-                    elDiv.style.fontSize = `${element.fontSize}px`;
-                    elDiv.style.fontFamily = element.fontFamily;
-                    elDiv.style.color = element.color;
-                    elDiv.style.fontWeight = element.bold ? 'bold' : 'normal';
-                    elDiv.style.fontStyle = element.italic ? 'italic' : 'normal';
-                    if (element.shadow) {
-                        elDiv.style.textShadow = '0px 0px 3px #FFFFFFEE, 2px 2px 4px rgba(0,0,0,0.8)';
-                    }
-                } else if (element.type === 'image') {
-                    const img = document.createElement('img');
-                    img.className = 'overlay-image';
-                    img.src = element.src;
-                    img.alt = element.name;
-                    elDiv.appendChild(img);
-                } else if (element.type === 'video') {
-                    const video = document.createElement('video');
-                    video.className = 'overlay-video';
-                    video.src = element.src;
-                    video.autoplay = element.autoplay !== false;
-                    video.loop = element.loop !== false;
-                    video.muted = element.muted !== false;
-                    video.playsInline = true;
-                    elDiv.appendChild(video);
-                }
-
-                container.appendChild(elDiv);
-            });
-        }
-
-        function updateElementsList() {
-            const list = document.getElementById('elementsList');
-            list.innerHTML = '';
-
-            if (elements.length === 0) {
-                list.innerHTML = '<li class="empty-state"><div class="empty-state-icon">📋</div><div>No elements yet</div></li>';
-                return;
-            }
-
-            elements.forEach((element, index) => {
-                const li = document.createElement('li');
-                li.className = `item-list-item${element.id === selectedElementId ? ' selected' : ''}`;
-                li.onclick = () => selectElement(element.id);
-
-                const typeIcons = { text: '📝', image: '🖼️', video: '🎬' };
-                
-                li.innerHTML = `
-                    <div class="item-list-item-info">
-                        <div class="item-list-item-name">${element.name || 'Unnamed'}</div>
-                        <div class="item-list-item-type">${typeIcons[element.type] || ''} ${element.type}</div>
-                    </div>
-                    <div class="item-list-item-actions">
-                        <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); moveElementUp(${index})">↑</button>
-                        <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); moveElementDown(${index})">↓</button>
-                    </div>
-                `;
-
-                list.appendChild(li);
-            });
-        }
-
-        function updateMediaLibrary() {
-            const list = document.getElementById('mediaLibrary');
-            list.innerHTML = '';
-
-            if (mediaLibrary.length === 0) {
-                list.innerHTML = '<li class="empty-state"><div class="empty-state-icon">📁</div><div>No media files</div></li>';
-                return;
-            }
-
-            mediaLibrary.forEach(media => {
-                const li = document.createElement('li');
-                li.className = 'item-list-item';
-
-                const typeIcons = { image: '🖼️', video: '🎬' };
-                
-                li.innerHTML = `
-                    <div class="item-list-item-info">
-                        <div class="item-list-item-name">${media.name}</div>
-                        <div class="item-list-item-type">${typeIcons[media.type] || ''} ${media.type}</div>
-                    </div>
-                    <div class="item-list-item-actions">
-                        <button class="btn btn-sm btn-primary" onclick="addElementFromMediaById('${media.id}')">+</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteMedia('${media.id}')">✕</button>
-                    </div>
-                `;
-
-                list.appendChild(li);
-            });
-        }
-
-        function addElementFromMediaById(mediaId) {
-            const media = mediaLibrary.find(m => m.id === mediaId);
-            if (media) {
-                addElementFromMedia(media);
-            }
-        }
-
-        function deleteMedia(mediaId) {
-            mediaLibrary = mediaLibrary.filter(m => m.id !== mediaId);
-            elements = elements.filter(e => e.mediaId !== mediaId);
-            updateMediaLibrary();
-            renderElements();
-            updateElementsList();
-        }
-
-        function moveElementUp(index) {
-            if (index === 0) return;
-            [elements[index - 1], elements[index]] = [elements[index], elements[index - 1]];
-            renderElements();
-            updateElementsList();
-        }
-
-        function moveElementDown(index) {
-            if (index === elements.length - 1) return;
-            [elements[index], elements[index + 1]] = [elements[index + 1], elements[index]];
-            renderElements();
-            updateElementsList();
-        }
-
-        // Drag and drop for upload area
-        const uploadArea = document.getElementById('uploadArea');
-        
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
-
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
-
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            
-            const files = e.dataTransfer.files;
-            for (let file of files) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const isVideo = file.type.startsWith('video/');
-                    const media = {
-                        id: generateId(),
-                        type: isVideo ? 'video' : 'image',
-                        name: file.name,
-                        src: event.target.result,
-                        url: event.target.result
-                    };
-                    
-                    mediaLibrary.push(media);
-                    updateMediaLibrary();
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // Canvas zoom adjustment
-        function adjustCanvasScale() {
-            const container = document.getElementById('canvasContainer');
-            const previewCanvas = document.getElementById('previewCanvas');
-            
-            const availableWidth = previewCanvas.clientWidth - 40;
-            const availableHeight = previewCanvas.clientHeight - 40;
-            
-            const scaleX = availableWidth / 1920;
-            const scaleY = availableHeight / 1080;
-            const scale = Math.min(scaleX, scaleY, 0.8);
-            
-            container.style.transform = `scale(${scale})`;
-        }
-
-        function resetZoom() {
-            const container = document.getElementById('canvasContainer');
-            container.style.transform = 'scale(0.5)';
-        }
-
-        function toggleGrid() {
-            showGrid = !showGrid;
-            const previewCanvas = document.getElementById('previewCanvas');
-            if (showGrid) {
-                previewCanvas.style.backgroundImage = `
-                    linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
-                `;
-                previewCanvas.style.backgroundSize = '100px 100px';
-            } else {
-                previewCanvas.style.backgroundImage = '';
-                previewCanvas.classList.add('pattern-bg');
-            }
-        }
-
-        function toggleTransparentBg(checked) {
-            isTransparentBg = checked;
-            const container = document.getElementById('canvasContainer');
-            if (checked) {
-                container.style.backgroundColor = 'transparent';
-            } else {
-                container.style.backgroundColor = '#000000';
-            }
-        }
-
-        // Export/Import
-        function exportConfig() {
-            const config = {
-                elements: elements,
-                mediaLibrary: mediaLibrary,
-                settings: {
-                    transparentBg: isTransparentBg
-                }
-            };
-
-            const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'overlay-config.json';
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function importConfig(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const config = JSON.parse(e.target.result);
-                    elements = config.elements || [];
-                    mediaLibrary = config.mediaLibrary || [];
-                    
-                    if (config.settings) {
-                        isTransparentBg = config.settings.transparentBg !== false;
-                        document.getElementById('transparentBg').checked = isTransparentBg;
-                        toggleTransparentBg(isTransparentBg);
-                    }
-
-                    renderElements();
-                    updateElementsList();
-                    updateMediaLibrary();
-                    alert('Configuration imported successfully!');
-                } catch (err) {
-                    alert('Error importing configuration: ' + err.message);
-                }
-            };
-            reader.readAsText(file);
-            event.target.value = '';
-        }
-
-        function saveProject() {
-            exportConfig();
-        }
-
-        function clearAll() {
-            if (confirm('Are you sure you want to clear all elements?')) {
-                elements = [];
-                selectedElementId = null;
-                renderElements();
-                updateElementsList();
-                updatePropertiesPanel();
-            }
-        }
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Delete' || e.key === 'Backspace') {
-                if (selectedElementId && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
-                    deleteSelectedElement();
-                }
-            }
-        });
-
-        // Click outside to deselect
-        document.getElementById('canvasContainer').addEventListener('click', (e) => {
-            if (e.target.id === 'canvasContainer') {
-                selectedElementId = null;
-                renderElements();
-                updateElementsList();
-                updatePropertiesPanel();
-            }
-        });
+        let selectedAgent = null;
+        let messages = {};
+        let tasks = [
+            { id: 1, name: 'Analyze Q3 Sales Data', progress: 75, completed: false },
+            { id: 2, name: 'Generate Marketing Copy', progress: 30, completed: false },
+            { id: 3, name: 'Debug Authentication Module', progress: 90, completed: false }
+        ];
 
         // Initialize
-        window.addEventListener('resize', adjustCanvasScale);
-        setTimeout(adjustCanvasScale, 100);
+        function init() {
+            renderAgentList();
+            renderTasks();
+            updateStats();
+        }
 
-        // Add a sample text element on first load
-        addTextElement();
+        // Render Agents
+        function renderAgentList() {
+            const agentList = document.getElementById('agentList');
+            agentList.innerHTML = '';
+
+            agents.forEach(agent => {
+                const card = document.createElement('div');
+                card.className = `agent-card ${selectedAgent === agent.id ? 'active' : ''}`;
+                card.onclick = () => selectAgent(agent.id);
+
+                card.innerHTML = `
+                    <div class="agent-header">
+                        <div class="agent-avatar">${agent.avatar}</div>
+                        <div class="agent-info">
+                            <h3>${agent.name}</h3>
+                            <div class="agent-status">
+                                <div class="status-dot ${agent.status === 'busy' ? 'busy' : ''}"></div>
+                                <span>${agent.role}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                agentList.appendChild(card);
+            });
+        }
+
+        // Select Agent
+        function selectAgent(agentId) {
+            selectedAgent = agentId;
+            const agent = agents.find(a => a.id === agentId);
+            
+            document.getElementById('chatTitle').textContent = `${agent.name} - ${agent.role}`;
+            
+            if (!messages[agentId]) {
+                messages[agentId] = [
+                    { role: 'assistant', content: `Hi! I'm ${agent.name}, your ${agent.role}. How can I help you today?` }
+                ];
+            }
+
+            renderMessages();
+            renderAgentList();
+        }
+
+        // Render Messages
+        function renderMessages() {
+            const chatMessages = document.getElementById('chatMessages');
+            
+            if (!selectedAgent) {
+                chatMessages.innerHTML = `
+                    <div class="message">
+                        <div class="message-avatar">🤖</div>
+                        <div class="message-content">
+                            Hello! I'm your AI assistant. Select an agent from the sidebar or create a new one to get started. I can help you automate tasks, analyze data, and manage your workflows.
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            chatMessages.innerHTML = '';
+            const agent = agents.find(a => a.id === selectedAgent);
+            const agentMessages = messages[selectedAgent] || [];
+
+            agentMessages.forEach(msg => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${msg.role === 'user' ? 'user' : ''}`;
+                
+                const avatar = msg.role === 'user' ? '👤' : agent.avatar;
+                
+                messageDiv.innerHTML = `
+                    <div class="message-avatar">${avatar}</div>
+                    <div class="message-content">${msg.content}</div>
+                `;
+                
+                chatMessages.appendChild(messageDiv);
+            });
+
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Send Message
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+
+            if (!message || !selectedAgent) return;
+
+            if (!messages[selectedAgent]) {
+                messages[selectedAgent] = [];
+            }
+
+            messages[selectedAgent].push({ role: 'user', content: message });
+            input.value = '';
+            renderMessages();
+
+            // Simulate AI response
+            setTimeout(() => {
+                showTypingIndicator();
+                
+                setTimeout(() => {
+                    removeTypingIndicator();
+                    const responses = [
+                        "I've analyzed your request and here's what I found...",
+                        "Great question! Let me process that for you.",
+                        "I'm working on that task now. Here's the update:",
+                        "Based on my analysis, I recommend the following approach...",
+                        "Task completed successfully! Here are the results:"
+                    ];
+                    
+                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                    messages[selectedAgent].push({ 
+                        role: 'assistant', 
+                        content: `${randomResponse}\n\nI've completed the analysis with 98% confidence. Would you like me to generate a detailed report or proceed with the next step?` 
+                    });
+                    
+                    renderMessages();
+                    updateStats();
+                }, 1500);
+            }, 300);
+        }
+
+        // Show Typing Indicator
+        function showTypingIndicator() {
+            const chatMessages = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Remove Typing Indicator
+        function removeTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        // Handle Enter Key
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Render Tasks
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+
+            tasks.forEach(task => {
+                const taskDiv = document.createElement('div');
+                taskDiv.className = 'task-item';
+                taskDiv.innerHTML = `
+                    <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})"></div>
+                    <div class="task-info">
+                        <div class="task-name">${task.name}</div>
+                        <div class="task-progress">${task.progress}% Complete</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${task.progress}%"></div>
+                        </div>
+                    </div>
+                `;
+                taskList.appendChild(taskDiv);
+            });
+        }
+
+        // Toggle Task
+        function toggleTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                task.completed = !task.completed;
+                if (task.completed) task.progress = 100;
+                renderTasks();
+                updateStats();
+            }
+        }
+
+        // Update Stats
+        function updateStats() {
+            const completedTasks = tasks.filter(t => t.completed).length;
+            document.getElementById('tasksCompleted').textContent = completedTasks;
+            
+            const activeMinutes = Math.floor(Math.random() * 120) + 30;
+            document.getElementById('activeTime').textContent = `${activeMinutes}m`;
+        }
+
+        // Create New Agent
+        function createNewAgent() {
+            const names = ['Nova', 'Zenith', 'Pulse', 'Echo', 'Vertex'];
+            const roles = ['Research Assistant', 'Project Manager', 'Customer Support', 'Financial Advisor', 'Marketing Specialist'];
+            const avatars = ['🌟', '🎯', '💬', '💰', '📈'];
+            
+            const randomIndex = Math.floor(Math.random() * names.length);
+            const newAgent = {
+                id: Date.now(),
+                name: names[randomIndex],
+                role: roles[randomIndex],
+                status: 'idle',
+                avatar: avatars[randomIndex],
+                tasks: []
+            };
+
+            agents.push(newAgent);
+            renderAgentList();
+            selectAgent(newAgent.id);
+        }
+
+        // Initialize app
+        init();
     </script>
 </body>
 </html>
